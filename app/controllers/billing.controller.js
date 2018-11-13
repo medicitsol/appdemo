@@ -2,6 +2,7 @@ const Billing = require('../models/billing.model');
 const Inventory = require('../models/inventory.master.model');
 // const Items = require('../models/order-items.schema');
 const { ObjectId } = require('mongodb'); // or ObjectID 
+const leftPad = require('left-pad')
 
 
 // Create and Save a new bill
@@ -17,22 +18,76 @@ exports.create = (req, res) => {
 
 
 
-    Billing.find().limit(1).sort({ $natural: -1 })
+    var today = new Date();
+    var thisYear = today.getFullYear().toString().substr(-2)
+    var todayDayTemp = today.getMonth() + 1;
+    var todayDay = leftPad(todayDayTemp, 2, 0);
+    console.log("todayyyyy", today);
+    console.log("date", todayDay);
+    console.log("year", thisYear);
+
+
+    var orderCodeSliced = "BL" + thisYear + todayDay;
+
+
+
+
+
+    // Billing.find().limit(1).sort({ $natural: -1 })
+    Billing.find({ billingNumber: { $regex: orderCodeSliced, $options: "$i" } }).limit(1).sort({ $natural: -1 })
         .then(lastBill => {
 
-            var billNumber = 0;
+
+
+
+
+
+            var currentOrderId = 0;
+            var convertedOrderId;
+            var convertedOrderIdFinal;
+            var finalOrderSequence;
+            var capitalizedFinalOrderSequence;
 
             if (lastBill.length > 0) {
-                billNumber = lastBill[0].billingNumber + 1;
+                currentOrderId = lastBill[0].billingNumber + 1;
+
+                currentOrderId = lastBill[0].billingNumber.slice(6, 9);
+                convertedOrderId = parseInt(currentOrderId);
+                convertedOrderIdFinal = convertedOrderId + 1;
+
+                finalOrderSequence = "BL" + thisYear + todayDay + leftPad(convertedOrderIdFinal, 3, 0);
+                capitalizedFinalOrderSequence = finalOrderSequence.toUpperCase();
+
+
             } else {
-                billNumber = 0 + 1;
+                currentOrderId = 0 + 1;
+
+                finalOrderSequence = "BL" + thisYear + todayDay + leftPad(currentOrderId, 3, 0);
+                capitalizedFinalOrderSequence = finalOrderSequence.toUpperCase();
             }
+
+
+
+
+
+            // ############################################################################################################
+
+            // var billNumber = 0;
+
+            // if (lastBill.length > 0) {
+            //     billNumber = lastBill[0].billingNumber + 1;
+            // } else {
+            //     billNumber = 0 + 1;
+            // }
+
+
+
 
 
             // Create a bill
             const billing = new Billing({
 
-                billingNumber: billNumber,
+                billingNumber: capitalizedFinalOrderSequence,
                 patientName: req.body.patientName,
                 patientGender: req.body.patientGender,
                 patientAge: req.body.patientAge,
@@ -79,7 +134,7 @@ exports.create = (req, res) => {
                                 itemCode: element.itemCode,
                                 itemName: element.itemName,
                                 invDocType: 'BILLING',
-                                invRef: billNumber,
+                                invRef: capitalizedFinalOrderSequence,
                                 itemExpiryDate: element.expiryDate,
                                 itemQuantity: -(element.quantity),
                                 // itemFreeQuantity: element.freeIssue,
@@ -220,16 +275,22 @@ exports.editBill = (req, res) => {
             // ###########################################################
 
 
+            var itemArrLength = bill.items.length;
+            var billItemCount = 0;
+
             bill.items.forEach(invEdit => {
 
+                billItemCount = billItemCount + 1;
 
+
+                console.log("Bill item>>>>>", billItemCount);
 
                 Inventory.findOneAndUpdate({ "item_id": invEdit.itemMasterId, "invRef": bill.billingNumber }, {
 
 
                     itemCode: invEdit.itemCode,
                     itemName: invEdit.itemName,
-                    invDocType: 'BILLINGS',
+                    invDocType: 'BILLING',
                     invRef: bill.billingNumber,
                     itemExpiryDate: invEdit.expiryDate,
                     itemQuantity: -(invEdit.quantity)
@@ -256,6 +317,12 @@ exports.editBill = (req, res) => {
                 // console.log("inv items>>>>>>", JSON.stringify(bill.billingNumber));
 
 
+                if (itemArrLength == billItemCount) {
+                    res.send(bill);
+                    itemArray = [];
+                }
+
+
             });
 
 
@@ -264,10 +331,10 @@ exports.editBill = (req, res) => {
 
 
 
-            setTimeout(function () {
-                res.send("Done!!!!");
-                itemArray = [];
-            }, 5000);
+            // setTimeout(function () {
+            //     res.send("Done!!!!");
+            //     itemArray = [];
+            // }, 7000);
 
 
 

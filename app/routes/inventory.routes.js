@@ -27,7 +27,7 @@ module.exports = (app) => {
     app.post('/inventory/get-quantity-by-expiry-date', inventory.getItemQuantityByExpirydate);
 
 
-    app.get('/inventory/get-all-inventory-items', inventory.getAllInventoryItems);
+    app.get('/inventory/get-all-inventory-items/:inventoryFilter', inventory.getAllInventoryItems);
 
 
     app.post('/inventory/purchase-qty/:itemId', inventory.getPurchaseQuantity);

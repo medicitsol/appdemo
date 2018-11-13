@@ -10,6 +10,7 @@ const BillingItemsSchema = new Schema({
     unit: String,
     expiryDate: String,
     quantity: Number,
+    priceOfBundle: Number,
     status: String
 },
     {

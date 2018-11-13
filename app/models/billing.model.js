@@ -4,7 +4,7 @@ var mongoosePaginate = require('mongoose-paginate');
 
 const BillingItemSchema = mongoose.Schema({
 
-    billingNumber: Number,
+    billingNumber: String,
     patientName: String,
     patientGender: String,
     patientAge: Number,

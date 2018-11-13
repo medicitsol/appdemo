@@ -4,15 +4,15 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const OrderItemsSchema = new Schema({
-    itemMasterId:String,
+    itemMasterId: String,
     itemCode: String,
     itemName: String,
     order: Number,
     freeIssue: Number,
     expiryDate: String,
     remark: String,
-    unit:String,
-    totalQty:Number,
+    unit: String,
+    totalQty: Number,
     status: String
 },
     {
